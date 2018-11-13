@@ -11,15 +11,33 @@ object WordCountDriver {
     println("WordCount-Spark");
     
     val sparkConf = new SparkConf();
-    sparkConf.setAppName(WordCountDriver.getClass.getName);
+    sparkConf.setAppName("WordCountDriver");
+    sparkConf.setMaster("local[*]");
+    sparkConf.set("spark.submit.deployMode", "client");
     
     val sc = new SparkContext(sparkConf);
     
-    val input = args(0);
-    println("Input is :"+input)
-    val inputRDD = sc.textFile(input);
     
-    inputRDD.collect().foreach(println);
+    val input = List("DEER","RIVER","DEER","RIVER","DEER","RIVER","DEER","RIVER","DEER","RIVER","RIVER");
+    
+    val inputRDD = sc.parallelize(input, 2);
+    
+    inputRDD.countByValue().foreach(println);
+    
+    val wordCountInput = args(0)
+    
+   val wcRDD  = sc.textFile(wordCountInput);
+   
+   val words = wcRDD.flatMap(line=>line.split(" "))
+   val reduceRDD = words.map(w=>(w,1)).reduceByKey(_+_);
+   reduceRDD.collect().foreach(println);
+   inputRDD.countByValue().foreach(println);
+    
+//    val input = args(0);
+//    println("Input is :"+input)
+//    val inputRDD = sc.textFile(input);
+//    
+//    inputRDD.collect().foreach(println);
     
     
   }
